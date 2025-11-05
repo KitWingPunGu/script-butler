@@ -1,0 +1,9 @@
+# 这是一个测试用的 pnpm-lock.yaml 文件
+# 用于测试包管理器自动检测功能
+
+lockfileVersion: '6.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+

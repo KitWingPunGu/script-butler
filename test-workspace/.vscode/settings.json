@@ -1,0 +1,80 @@
+{
+    "scriptButler.workflows": [
+        {
+            "id": "workflow-test-manual",
+            "name": "测试工作流",
+            "description": "手动添加的测试工作流",
+            "steps": [
+                {
+                    "type": "command",
+                    "command": "echo 'Hello from workflow'",
+                    "mode": "serial",
+                    "continueOnError": false
+                }
+            ]
+        },
+        {
+            "id": "workflow-test-manual-2",
+            "name": "第二个测试工作流",
+            "description": "验证配置监听是否工作",
+            "steps": [
+                {
+                    "type": "command",
+                    "command": "echo 'Second workflow'",
+                    "mode": "serial",
+                    "continueOnError": false
+                }
+            ]
+        },
+        {
+            "id": "workflow-1762345835972",
+            "name": "# 每行一个123124命令",
+            "description": "1",
+            "steps": [
+                {
+                    "type": "command",
+                    "command": "npm run clean",
+                    "mode": "serial",
+                    "continueOnError": false
+                },
+                {
+                    "type": "command",
+                    "command": "npm run build",
+                    "mode": "serial",
+                    "continueOnError": false
+                },
+                {
+                    "type": "command",
+                    "command": "npm run test",
+                    "mode": "serial",
+                    "continueOnError": false
+                }
+            ]
+        },
+        {
+            "id": "workflow-1762345860008",
+            "name": "# 每行一爱上对方个命令",
+            "description": "33",
+            "steps": [
+                {
+                    "type": "command",
+                    "command": "npm run clean",
+                    "mode": "serial",
+                    "continueOnError": false
+                },
+                {
+                    "type": "command",
+                    "command": "npm run build",
+                    "mode": "serial",
+                    "continueOnError": false
+                },
+                {
+                    "type": "command",
+                    "command": "npm run test",
+                    "mode": "serial",
+                    "continueOnError": false
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,369 @@
+{
+  "name": "script-butler",
+  "displayName": "脚本管家",
+  "description": "智能管理和执行项目脚本，支持 npm/pnpm/yarn 等多种包管理器",
+  "version": "1.0.0",
+  "publisher": "your-publisher-name",
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/script-butler"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "npm",
+    "script",
+    "workflow",
+    "package manager",
+    "pnpm",
+    "yarn"
+  ],
+  "activationEvents": [
+    "workspaceContains:**/package.json"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "npm-script-manager",
+          "title": "脚本管家",
+          "icon": "resources/npm-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "npm-script-manager": [
+        {
+          "id": "npmFavorites",
+          "name": "收藏夹"
+        },
+        {
+          "id": "npmHistory",
+          "name": "最近执行"
+        },
+        {
+          "id": "npmWorkflows",
+          "name": "工作流"
+        },
+        {
+          "id": "gitCommands",
+          "name": "Git 命令"
+        },
+        {
+          "id": "npmScripts",
+          "name": "脚本列表"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "npmScriptManager.refresh",
+        "title": "刷新脚本",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "npmScriptManager.runScript",
+        "title": "运行脚本",
+        "icon": "$(play)"
+      },
+      {
+        "command": "npmScriptManager.addToFavorites",
+        "title": "添加到收藏夹",
+        "icon": "$(star-empty)"
+      },
+      {
+        "command": "npmScriptManager.removeFromFavorites",
+        "title": "从收藏夹移除",
+        "icon": "$(star-full)"
+      },
+      {
+        "command": "npmScriptManager.filterScripts",
+        "title": "过滤脚本",
+        "icon": "$(filter)"
+      },
+      {
+        "command": "npmScriptManager.clearFilter",
+        "title": "清除过滤",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "scriptButler.clearHistory",
+        "title": "清空历史记录",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "scriptButler.createWorkflow",
+        "title": "创建工作流",
+        "icon": "$(add)"
+      },
+      {
+        "command": "scriptButler.importWorkflow",
+        "title": "导入工作流",
+        "icon": "$(folder-opened)"
+      },
+      {
+        "command": "scriptButler.diagnoseWorkflow",
+        "title": "诊断工作流状态",
+        "icon": "$(debug-console)"
+      },
+      {
+        "command": "scriptButler.runWorkflow",
+        "title": "执行工作流",
+        "icon": "$(play)"
+      },
+      {
+        "command": "scriptButler.editWorkflow",
+        "title": "编辑工作流",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "scriptButler.deleteWorkflow",
+        "title": "删除工作流",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "scriptButler.runGitCommand",
+        "title": "执行 Git 命令",
+        "icon": "$(play)"
+      },
+      {
+        "command": "scriptButler.addGitCommand",
+        "title": "添加 Git 命令"
+      },
+      {
+        "command": "scriptButler.deleteGitCommand",
+        "title": "删除 Git 命令",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "scriptButler.addGitCommandToFavorites",
+        "title": "添加到收藏夹",
+        "icon": "$(star-empty)"
+      },
+      {
+        "command": "scriptButler.removeGitCommandFromFavorites",
+        "title": "从收藏夹移除",
+        "icon": "$(star-full)"
+      },
+      {
+        "command": "scriptButler.toggleTerminalMonitoring",
+        "title": "切换终端监听功能",
+        "category": "脚本管家",
+        "icon": "$(eye)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "npmScriptManager.refresh",
+          "when": "view == npmScripts",
+          "group": "navigation"
+        },
+        {
+          "command": "npmScriptManager.filterScripts",
+          "when": "view == npmScripts",
+          "group": "navigation"
+        },
+        {
+          "command": "npmScriptManager.clearFilter",
+          "when": "view == npmScripts && npmScriptManager.filterActive",
+          "group": "navigation"
+        },
+        {
+          "command": "scriptButler.clearHistory",
+          "when": "view == npmHistory",
+          "group": "navigation"
+        },
+        {
+          "command": "scriptButler.createWorkflow",
+          "when": "view == npmWorkflows",
+          "group": "navigation@1"
+        },
+        {
+          "command": "scriptButler.importWorkflow",
+          "when": "view == npmWorkflows",
+          "group": "navigation@2"
+        },
+        {
+          "command": "scriptButler.diagnoseWorkflow",
+          "when": "view == npmWorkflows",
+          "group": "navigation@3"
+        },
+        {
+          "command": "scriptButler.addGitCommand",
+          "when": "view == gitCommands",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "npmScriptManager.runScript",
+          "when": "view == npmScripts && viewItem == script",
+          "group": "inline"
+        },
+        {
+          "command": "npmScriptManager.addToFavorites",
+          "when": "view == npmScripts && viewItem == script",
+          "group": "favorites"
+        },
+        {
+          "command": "npmScriptManager.runScript",
+          "when": "view == npmFavorites && viewItem == favoriteScript",
+          "group": "inline"
+        },
+        {
+          "command": "npmScriptManager.removeFromFavorites",
+          "when": "view == npmFavorites && viewItem == favoriteScript",
+          "group": "favorites"
+        },
+        {
+          "command": "scriptButler.runWorkflow",
+          "when": "view == npmWorkflows && viewItem == workflow",
+          "group": "inline"
+        },
+        {
+          "command": "scriptButler.editWorkflow",
+          "when": "view == npmWorkflows && viewItem == workflow"
+        },
+        {
+          "command": "scriptButler.deleteWorkflow",
+          "when": "view == npmWorkflows && viewItem == workflow"
+        },
+        {
+          "command": "scriptButler.runGitCommand",
+          "when": "view == gitCommands && (viewItem == presetGitCommand || viewItem == customGitCommand)",
+          "group": "inline"
+        },
+        {
+          "command": "scriptButler.addGitCommandToFavorites",
+          "when": "view == gitCommands && (viewItem == presetGitCommand || viewItem == customGitCommand)",
+          "group": "favorites"
+        },
+        {
+          "command": "scriptButler.removeGitCommandFromFavorites",
+          "when": "view == npmFavorites && viewItem == favoriteGitCommand",
+          "group": "favorites"
+        },
+        {
+          "command": "scriptButler.deleteGitCommand",
+          "when": "view == gitCommands && viewItem == customGitCommand"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "脚本管家",
+      "properties": {
+        "npmScriptManager.packageManager": {
+          "type": "string",
+          "enum": ["npm", "pnpm", "yarn", "yarn-berry", "auto"],
+          "default": "auto",
+          "description": "指定使用的包管理器。选择 'auto' 将自动检测（推荐）",
+          "enumDescriptions": [
+            "使用 npm",
+            "使用 pnpm",
+            "使用 Yarn Classic",
+            "使用 Yarn Berry (Yarn 2+)",
+            "自动检测（根据锁文件）"
+          ]
+        },
+        "scriptButler.enableTerminalMonitoring": {
+          "type": "boolean",
+          "default": false,
+          "description": "启用终端命令监听功能（实验性）。自动捕获并记录终端中执行的 npm/pnpm/yarn 脚本命令到【最近执行】历史。需要 Shell Integration 支持，仅适用于 bash/zsh/fish/pwsh。",
+          "order": 10
+        },
+        "scriptButler.terminalMonitoring.showNotifications": {
+          "type": "boolean",
+          "default": false,
+          "description": "当终端监听捕获到脚本执行时显示通知",
+          "order": 11
+        },
+        "scriptButler.workflows": {
+          "type": "array",
+          "default": [],
+          "description": "工作流配置（自动管理，请勿手动编辑）",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "工作流唯一标识符"
+              },
+              "name": {
+                "type": "string",
+                "description": "工作流名称"
+              },
+              "description": {
+                "type": "string",
+                "description": "工作流描述"
+              },
+              "steps": {
+                "type": "array",
+                "description": "工作流步骤",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["script", "command"],
+                      "description": "步骤类型"
+                    },
+                    "scriptName": {
+                      "type": "string",
+                      "description": "NPM 脚本名称（type=script 时使用）"
+                    },
+                    "packageJsonPath": {
+                      "type": "string",
+                      "description": "package.json 路径（type=script 时使用）"
+                    },
+                    "command": {
+                      "type": "string",
+                      "description": "任意命令（type=command 时使用）"
+                    },
+                    "mode": {
+                      "type": "string",
+                      "enum": ["serial", "parallel"],
+                      "description": "执行模式：串行或并行"
+                    },
+                    "continueOnError": {
+                      "type": "boolean",
+                      "description": "失败后是否继续执行"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "scope": "resource",
+          "order": 20
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package",
+    "publish": "vsce publish",
+    "build": "npm run compile && npm run package"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.130",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3"
+  }
+}

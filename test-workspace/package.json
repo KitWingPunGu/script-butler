@@ -1,0 +1,25 @@
+{
+  "name": "test-project",
+  "version": "1.0.0",
+  "description": "Test project for NPM Script Manager extension",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json,css,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,json,css,md}\"",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "prepare": "husky install",
+    "start": "npm run dev",
+    "deploy": "npm run build && npm run deploy:prod",
+    "deploy:prod": "echo 'Deploying to production...'",
+    "deploy:staging": "echo 'Deploying to staging...'"
+  }
+}
+
