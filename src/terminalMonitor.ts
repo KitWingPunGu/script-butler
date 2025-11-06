@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { NpmScript } from './types';
+import { NpmScript, GenericCommand } from './types';
 import { HistoryManager } from './historyManager';
 import { PackageScanner } from './packageScanner';
 
@@ -165,9 +165,14 @@ export class TerminalMonitor {
             return;
         }
 
-        // 可以在这里添加 Git 命令的处理
-        // const gitMatch = this.matchGitCommand(trimmedCommand);
-        // if (gitMatch) { ... }
+        // 检查是否是其他 CLI 工具命令
+        const genericMatch = this.matchGenericCommand(trimmedCommand);
+        if (genericMatch) {
+            this.stats.commandsCaptured++;
+            this.emitStatsChange();
+            await this.recordGenericCommand(genericMatch);
+            return;
+        }
     }
 
     /**
@@ -231,6 +236,63 @@ export class TerminalMonitor {
         if (showNotifications) {
             vscode.window.showInformationMessage(
                 `已记录脚本执行: ${script.name}`,
+                { modal: false }
+            );
+        }
+    }
+
+    /**
+     * 匹配通用 CLI 命令
+     */
+    private matchGenericCommand(command: string): GenericCommand | null {
+        // 常见的 CLI 工具列表
+        const cliTools = [
+            'tcb',        // 腾讯云开发
+            'aws',        // AWS CLI
+            'gcloud',     // Google Cloud
+            'az',         // Azure CLI
+            'docker',     // Docker
+            'kubectl',    // Kubernetes
+            'terraform',  // Terraform
+            'serverless', // Serverless Framework
+            'vercel',     // Vercel CLI
+            'netlify',    // Netlify CLI
+            'firebase',   // Firebase CLI
+            'heroku',     // Heroku CLI
+            'gh',         // GitHub CLI
+            'git',        // Git (补充记录)
+        ];
+
+        // 检查命令是否以这些 CLI 工具开头
+        for (const cli of cliTools) {
+            const regex = new RegExp(`^${cli}\\s+`);
+            if (regex.test(command)) {
+                return {
+                    id: `${cli}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    command: command,
+                    cli: cli,
+                    timestamp: Date.now()
+                };
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * 记录通用 CLI 命令执行
+     */
+    private async recordGenericCommand(cmd: GenericCommand): Promise<void> {
+        await this.historyManager.addToHistory(cmd, 'command');
+        console.log(`[TerminalMonitor] Recorded generic command: ${cmd.cli} - ${cmd.command}`);
+        
+        // 显示通知（可选）
+        const config = vscode.workspace.getConfiguration('scriptButler');
+        const showNotifications = config.get<boolean>('terminalMonitoring.showNotifications', false);
+        
+        if (showNotifications) {
+            vscode.window.showInformationMessage(
+                `已记录命令执行: ${cmd.cli}`,
                 { modal: false }
             );
         }

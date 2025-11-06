@@ -13,7 +13,8 @@ import { WorkflowCreator } from './workflowCreator';
 import { GitCommandManager } from './gitCommandManager';
 import { GitCommandTreeProvider, GitCommandTreeItem } from './gitCommandTreeProvider';
 import { TerminalMonitor } from './terminalMonitor';
-import { NpmScript, NpmScriptTreeItem, Workflow, GitCommand } from './types';
+import { NpmScript, NpmScriptTreeItem, Workflow, GitCommand, GenericCommand } from './types';
+import { HistoryItem } from './historyManager';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('脚本管家已激活');
@@ -635,6 +636,57 @@ export function activate(context: vscode.ExtensionContext) {
         }
     );
 
+    // Run generic command from history
+    const runGenericCommandCommand = vscode.commands.registerCommand(
+        'scriptButler.runGenericCommand',
+        async (cmd: GenericCommand) => {
+            if (!cmd || !cmd.command) {
+                vscode.window.showErrorMessage('无效的命令对象');
+                return;
+            }
+
+            await scriptExecutor.executeGitCommand(cmd.command, `${cmd.cli} 命令`);
+            
+            // 更新历史记录（增加执行次数）
+            await historyManager.addToHistory(cmd, 'command');
+            historyTreeProvider.refresh();
+        }
+    );
+
+    // Add history item to favorites
+    const addHistoryToFavoritesCommand = vscode.commands.registerCommand(
+        'scriptButler.addHistoryToFavorites',
+        async (treeItem: any) => {
+            const historyItem: HistoryItem | undefined = treeItem?.historyItem;
+            
+            if (!historyItem) {
+                vscode.window.showErrorMessage('无效的历史记录项');
+                return;
+            }
+
+            await historyManager.addToFavorites(historyItem);
+            historyTreeProvider.refresh();
+            console.log(`[ScriptButler] Added history item to favorites`);
+        }
+    );
+
+    // Remove history item from favorites
+    const removeHistoryFromFavoritesCommand = vscode.commands.registerCommand(
+        'scriptButler.removeHistoryFromFavorites',
+        async (treeItem: any) => {
+            const historyItem: HistoryItem | undefined = treeItem?.historyItem;
+            
+            if (!historyItem) {
+                vscode.window.showErrorMessage('无效的历史记录项');
+                return;
+            }
+
+            await historyManager.removeFromFavorites(historyItem);
+            historyTreeProvider.refresh();
+            console.log(`[ScriptButler] Removed history item from favorites`);
+        }
+    );
+
     // Add to subscriptions
     context.subscriptions.push(
         scriptsTreeView,
@@ -662,7 +714,10 @@ export function activate(context: vscode.ExtensionContext) {
         deleteGitCommandCommand,
         addGitCommandToFavoritesCommand,
         removeGitCommandFromFavoritesCommand,
-        toggleTerminalMonitoringCommand
+        toggleTerminalMonitoringCommand,
+        runGenericCommandCommand,
+        addHistoryToFavoritesCommand,
+        removeHistoryFromFavoritesCommand
     );
 
     // Dispose script executor on deactivation

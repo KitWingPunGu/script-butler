@@ -1,33 +1,38 @@
 import * as vscode from 'vscode';
-import { NpmScript, GitCommand } from './types';
+import { NpmScript, GitCommand, GenericCommand } from './types';
 
 /**
  * 历史记录项
  */
 export interface HistoryItem {
-    type: 'script' | 'git';
+    type: 'script' | 'git' | 'command';
     script?: NpmScript;
     gitCommand?: GitCommand;
+    genericCommand?: GenericCommand;
     timestamp: number;
     executionCount: number;
+    isFavorite?: boolean;  // 是否收藏
 }
 
 /**
  * 存储键
  */
 const HISTORY_STORAGE_KEY = 'scriptButler.history';
+const HISTORY_FAVORITES_KEY = 'scriptButler.historyFavorites';
 
 /**
  * 管理脚本执行历史记录
  */
 export class HistoryManager {
     private history: HistoryItem[] = [];
+    private favorites: Set<string> = new Set();
     private maxHistorySize: number = 10;
     private context: vscode.ExtensionContext;
 
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
         this.loadHistory();
+        this.loadFavorites();
     }
 
     /**
@@ -45,13 +50,20 @@ export class HistoryManager {
                     executionCount: item.executionCount && item.executionCount > 0 ? item.executionCount : 1
                 };
 
-                // 兼容旧数据：无 type 或 script 丢失的记录直接丢弃
+                // 兼容旧数据：无 type 或数据丢失的记录直接丢弃
                 if (normalized.type === 'script' && !normalized.script) {
                     return null;
                 }
                 if (normalized.type === 'git' && !normalized.gitCommand) {
                     return null;
                 }
+                if (normalized.type === 'command' && !normalized.genericCommand) {
+                    return null;
+                }
+
+                // 同步收藏状态
+                const key = this.getHistoryKey(normalized);
+                normalized.isFavorite = this.favorites.has(key);
 
                 return normalized;
             })
@@ -82,9 +94,15 @@ export class HistoryManager {
         return `git::${gitCommand.id}`;
     }
 
+    private getHistoryKeyForGenericCommand(cmd: GenericCommand): string {
+        return `command::${cmd.id}`;
+    }
+
     private getHistoryKey(item: HistoryItem): string {
         if (item.type === 'git' && item.gitCommand) {
             return this.getHistoryKeyForGitCommand(item.gitCommand);
+        } else if (item.type === 'command' && item.genericCommand) {
+            return this.getHistoryKeyForGenericCommand(item.genericCommand);
         } else if (item.script) {
             return this.getHistoryKeyForScript(item.script);
         }
@@ -104,20 +122,24 @@ export class HistoryManager {
     }
 
     /**
-     * 添加到历史记录（支持脚本和 Git 命令）
+     * 添加到历史记录（支持脚本、Git 命令和通用命令）
      */
-    async addToHistory(target: NpmScript | GitCommand, type: 'script' | 'git' = 'script'): Promise<void> {
+    async addToHistory(target: NpmScript | GitCommand | GenericCommand, type: 'script' | 'git' | 'command' = 'script'): Promise<void> {
         if (type === 'git') {
             await this.addHistoryEntry({ type: 'git', gitCommand: target as GitCommand });
+        } else if (type === 'command') {
+            await this.addHistoryEntry({ type: 'command', genericCommand: target as GenericCommand });
         } else {
             await this.addHistoryEntry({ type: 'script', script: target as NpmScript });
         }
     }
 
-    private async addHistoryEntry(entry: { type: 'script'; script: NpmScript } | { type: 'git'; gitCommand: GitCommand }): Promise<void> {
+    private async addHistoryEntry(entry: { type: 'script'; script: NpmScript } | { type: 'git'; gitCommand: GitCommand } | { type: 'command'; genericCommand: GenericCommand }): Promise<void> {
         const key = entry.type === 'script'
             ? this.getHistoryKeyForScript(entry.script)
-            : this.getHistoryKeyForGitCommand(entry.gitCommand);
+            : entry.type === 'git'
+            ? this.getHistoryKeyForGitCommand(entry.gitCommand)
+            : this.getHistoryKeyForGenericCommand(entry.genericCommand);
 
         const existingIndex = this.history.findIndex(item => this.getHistoryKey(item) === key);
 
@@ -129,8 +151,10 @@ export class HistoryManager {
 
             if (entry.type === 'script') {
                 existingItem.script = entry.script;
-            } else {
+            } else if (entry.type === 'git') {
                 existingItem.gitCommand = entry.gitCommand;
+            } else {
+                existingItem.genericCommand = entry.genericCommand;
             }
 
             this.history.splice(existingIndex, 1);
@@ -140,8 +164,10 @@ export class HistoryManager {
                 type: entry.type,
                 script: entry.type === 'script' ? entry.script : undefined,
                 gitCommand: entry.type === 'git' ? entry.gitCommand : undefined,
+                genericCommand: entry.type === 'command' ? entry.genericCommand : undefined,
                 timestamp: Date.now(),
-                executionCount: 1
+                executionCount: 1,
+                isFavorite: false
             };
 
             this.history.unshift(newItem);
@@ -173,7 +199,7 @@ export class HistoryManager {
     }
 
     /**
-     * 清理无效的历史记录（脚本或 Git 命令已不存在）
+     * 清理无效的历史记录（脚本或 Git 命令已不存在，通用命令保留）
      */
     async cleanupInvalidHistory(allScripts: NpmScript[], allGitCommands: GitCommand[]): Promise<number> {
         const validScriptKeys = new Set(allScripts.map(script => this.getScriptKey(script)));
@@ -181,6 +207,11 @@ export class HistoryManager {
         const originalLength = this.history.length;
         
         this.history = this.history.filter(item => {
+            // 通用命令始终保留
+            if (item.type === 'command') {
+                return !!item.genericCommand;
+            }
+
             if (item.type === 'git') {
                 if (!item.gitCommand) {
                     return false;
@@ -249,5 +280,61 @@ export class HistoryManager {
      */
     getMaxHistorySize(): number {
         return this.maxHistorySize;
+    }
+
+    /**
+     * 加载收藏列表
+     */
+    private loadFavorites(): void {
+        const stored = this.context.globalState.get<string[]>(HISTORY_FAVORITES_KEY, []);
+        this.favorites = new Set(stored);
+    }
+
+    /**
+     * 保存收藏列表
+     */
+    private async saveFavorites(): Promise<void> {
+        await this.context.globalState.update(HISTORY_FAVORITES_KEY, Array.from(this.favorites));
+    }
+
+    /**
+     * 添加到收藏
+     */
+    async addToFavorites(item: HistoryItem): Promise<void> {
+        const key = this.getHistoryKey(item);
+        if (key && !this.favorites.has(key)) {
+            this.favorites.add(key);
+            item.isFavorite = true;
+            await this.saveFavorites();
+            await this.saveHistory();
+        }
+    }
+
+    /**
+     * 从收藏移除
+     */
+    async removeFromFavorites(item: HistoryItem): Promise<void> {
+        const key = this.getHistoryKey(item);
+        if (key && this.favorites.has(key)) {
+            this.favorites.delete(key);
+            item.isFavorite = false;
+            await this.saveFavorites();
+            await this.saveHistory();
+        }
+    }
+
+    /**
+     * 检查是否已收藏
+     */
+    isFavorite(item: HistoryItem): boolean {
+        const key = this.getHistoryKey(item);
+        return key ? this.favorites.has(key) : false;
+    }
+
+    /**
+     * 获取所有收藏的历史记录
+     */
+    getFavorites(): HistoryItem[] {
+        return this.history.filter(item => item.isFavorite);
     }
 }

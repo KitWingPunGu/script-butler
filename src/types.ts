@@ -122,3 +122,13 @@ export interface GitCommand {
     isCustom?: boolean;  // 是否为用户自定义命令
 }
 
+/**
+ * 通用 CLI 命令定义（用于终端监听捕获）
+ */
+export interface GenericCommand {
+    id: string;
+    command: string;  // 完整命令
+    cli: string;      // CLI 工具名称（如 tcb, aws, docker 等）
+    timestamp: number;
+}
+

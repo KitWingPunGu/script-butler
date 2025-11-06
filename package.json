@@ -157,6 +157,21 @@
         "title": "切换终端监听功能",
         "category": "脚本管家",
         "icon": "$(eye)"
+      },
+      {
+        "command": "scriptButler.runGenericCommand",
+        "title": "运行命令",
+        "icon": "$(play)"
+      },
+      {
+        "command": "scriptButler.addHistoryToFavorites",
+        "title": "添加到收藏",
+        "icon": "$(star-empty)"
+      },
+      {
+        "command": "scriptButler.removeHistoryFromFavorites",
+        "title": "从收藏移除",
+        "icon": "$(star-full)"
       }
     ],
     "menus": {
@@ -254,6 +269,21 @@
         {
           "command": "scriptButler.deleteGitCommand",
           "when": "view == gitCommands && viewItem == customGitCommand"
+        },
+        {
+          "command": "scriptButler.runGenericCommand",
+          "when": "view == npmHistory && (viewItem == historyGenericCommand || viewItem == historyGenericCommandFavorite)",
+          "group": "inline"
+        },
+        {
+          "command": "scriptButler.addHistoryToFavorites",
+          "when": "view == npmHistory && (viewItem == historyScript || viewItem == historyGitCommand || viewItem == historyGenericCommand)",
+          "group": "favorites"
+        },
+        {
+          "command": "scriptButler.removeHistoryFromFavorites",
+          "when": "view == npmHistory && (viewItem == historyScriptFavorite || viewItem == historyGitCommandFavorite || viewItem == historyGenericCommandFavorite)",
+          "group": "favorites"
         }
       ]
     },
