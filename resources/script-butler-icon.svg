@@ -1,9 +1,9 @@
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- 脚本文档轮廓 -->
-  <path d="M7 4 L17 4 L17 20 L7 20 Z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
+  <!-- 脚本文档轮廓 - 加宽设计 -->
+  <path d="M5 3 L19 3 L19 21 L5 21 Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/>
   
   <!-- 代码符号 </> -->
-  <path d="M9 9 L7 12 L9 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M15 9 L17 12 L15 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-  <line x1="13" y1="9" x2="11" y2="15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M8.5 9 L6 12 L8.5 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M15.5 9 L18 12 L15.5 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="13.5" y1="9" x2="10.5" y2="15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
 </svg>
