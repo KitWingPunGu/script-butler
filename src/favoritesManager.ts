@@ -100,7 +100,7 @@ export class FavoritesManager {
         if (!this.favorites.has(key)) {
             this.favorites.add(key);
             await this.saveFavorites();
-            vscode.window.showInformationMessage(`已将脚本 "${script.name}" 添加到收藏夹`);
+            console.log(`[FavoritesManager] Added script "${script.name}" to favorites`);
         }
     }
 
@@ -112,7 +112,7 @@ export class FavoritesManager {
         if (this.favorites.has(key)) {
             this.favorites.delete(key);
             await this.saveFavorites();
-            vscode.window.showInformationMessage(`已将脚本 "${script.name}" 从收藏夹移除`);
+            console.log(`[FavoritesManager] Removed script "${script.name}" from favorites`);
         }
     }
 
@@ -124,7 +124,7 @@ export class FavoritesManager {
         if (!this.favorites.has(key)) {
             this.favorites.add(key);
             await this.saveFavorites();
-            vscode.window.showInformationMessage(`已将 Git 命令 "${gitCommand.name}" 添加到收藏夹`);
+            console.log(`[FavoritesManager] Added Git command "${gitCommand.name}" to favorites`);
         }
     }
 
@@ -136,7 +136,7 @@ export class FavoritesManager {
         if (this.favorites.has(key)) {
             this.favorites.delete(key);
             await this.saveFavorites();
-            vscode.window.showInformationMessage(`已将 Git 命令 "${gitCommand.name}" 从收藏夹移除`);
+            console.log(`[FavoritesManager] Removed Git command "${gitCommand.name}" from favorites`);
         }
     }
 

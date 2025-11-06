@@ -34,7 +34,7 @@
         {
           "id": "npm-script-manager",
           "title": "脚本管家",
-          "icon": "resources/npm-icon.svg"
+          "icon": "resources/script-butler-icon.svg"
         }
       ]
     },
@@ -183,7 +183,7 @@
         },
         {
           "command": "scriptButler.createWorkflow",
-          "when": "view == npmWorkflows",
+          "when": "view == npmWorkflows && !isProduction",
           "group": "navigation@1"
         },
         {
@@ -193,7 +193,7 @@
         },
         {
           "command": "scriptButler.diagnoseWorkflow",
-          "when": "view == npmWorkflows",
+          "when": "view == npmWorkflows && !isProduction",
           "group": "navigation@3"
         },
         {

@@ -1,11 +1,13 @@
 import * as vscode from 'vscode';
-import { NpmScript } from './types';
+import { NpmScript, GitCommand } from './types';
 
 /**
  * 历史记录项
  */
 export interface HistoryItem {
-    script: NpmScript;
+    type: 'script' | 'git';
+    script?: NpmScript;
+    gitCommand?: GitCommand;
     timestamp: number;
     executionCount: number;
 }
@@ -32,8 +34,30 @@ export class HistoryManager {
      * 从持久化存储加载历史记录
      */
     private loadHistory(): void {
-        const stored = this.context.globalState.get<HistoryItem[]>(HISTORY_STORAGE_KEY, []);
-        this.history = stored;
+        const stored = this.context.globalState.get<any[]>(HISTORY_STORAGE_KEY, []);
+        this.history = stored
+            .map((item) => {
+                const normalized: HistoryItem = {
+                    type: item.type ?? 'script',
+                    script: item.script,
+                    gitCommand: item.gitCommand,
+                    timestamp: item.timestamp ?? Date.now(),
+                    executionCount: item.executionCount && item.executionCount > 0 ? item.executionCount : 1
+                };
+
+                // 兼容旧数据：无 type 或 script 丢失的记录直接丢弃
+                if (normalized.type === 'script' && !normalized.script) {
+                    return null;
+                }
+                if (normalized.type === 'git' && !normalized.gitCommand) {
+                    return null;
+                }
+
+                return normalized;
+            })
+            .filter((item): item is HistoryItem => item !== null);
+
+        this.sortHistory();
     }
 
     /**
@@ -50,38 +74,81 @@ export class HistoryManager {
         return `${script.packageJsonPath}::${script.name}`;
     }
 
+    private getHistoryKeyForScript(script: NpmScript): string {
+        return `script::${this.getScriptKey(script)}`;
+    }
+
+    private getHistoryKeyForGitCommand(gitCommand: GitCommand): string {
+        return `git::${gitCommand.id}`;
+    }
+
+    private getHistoryKey(item: HistoryItem): string {
+        if (item.type === 'git' && item.gitCommand) {
+            return this.getHistoryKeyForGitCommand(item.gitCommand);
+        } else if (item.script) {
+            return this.getHistoryKeyForScript(item.script);
+        }
+        return '';
+    }
+
     /**
-     * 添加脚本到历史记录
+     * 按执行次数与最近时间排序历史记录
      */
-    async addToHistory(script: NpmScript): Promise<void> {
-        const scriptKey = this.getScriptKey(script);
-        
-        // 查找是否已存在
-        const existingIndex = this.history.findIndex(item => 
-            this.getScriptKey(item.script) === scriptKey
-        );
+    private sortHistory(): void {
+        this.history.sort((a, b) => {
+            if (b.executionCount !== a.executionCount) {
+                return b.executionCount - a.executionCount;
+            }
+            return b.timestamp - a.timestamp;
+        });
+    }
+
+    /**
+     * 添加到历史记录（支持脚本和 Git 命令）
+     */
+    async addToHistory(target: NpmScript | GitCommand, type: 'script' | 'git' = 'script'): Promise<void> {
+        if (type === 'git') {
+            await this.addHistoryEntry({ type: 'git', gitCommand: target as GitCommand });
+        } else {
+            await this.addHistoryEntry({ type: 'script', script: target as NpmScript });
+        }
+    }
+
+    private async addHistoryEntry(entry: { type: 'script'; script: NpmScript } | { type: 'git'; gitCommand: GitCommand }): Promise<void> {
+        const key = entry.type === 'script'
+            ? this.getHistoryKeyForScript(entry.script)
+            : this.getHistoryKeyForGitCommand(entry.gitCommand);
+
+        const existingIndex = this.history.findIndex(item => this.getHistoryKey(item) === key);
 
         if (existingIndex !== -1) {
-            // 已存在，更新时间戳和执行次数
             const existingItem = this.history[existingIndex];
             existingItem.timestamp = Date.now();
-            existingItem.executionCount++;
-            
-            // 移到开头
+            existingItem.executionCount = (existingItem.executionCount || 0) + 1;
+            existingItem.type = entry.type;
+
+            if (entry.type === 'script') {
+                existingItem.script = entry.script;
+            } else {
+                existingItem.gitCommand = entry.gitCommand;
+            }
+
             this.history.splice(existingIndex, 1);
             this.history.unshift(existingItem);
         } else {
-            // 不存在，添加新记录
             const newItem: HistoryItem = {
-                script: script,
+                type: entry.type,
+                script: entry.type === 'script' ? entry.script : undefined,
+                gitCommand: entry.type === 'git' ? entry.gitCommand : undefined,
                 timestamp: Date.now(),
                 executionCount: 1
             };
-            
+
             this.history.unshift(newItem);
         }
 
-        // 限制历史记录数量
+        this.sortHistory();
+
         if (this.history.length > this.maxHistorySize) {
             this.history = this.history.slice(0, this.maxHistorySize);
         }
@@ -93,6 +160,7 @@ export class HistoryManager {
      * 获取所有历史记录
      */
     getHistory(): HistoryItem[] {
+        this.sortHistory();
         return [...this.history];
     }
 
@@ -105,19 +173,32 @@ export class HistoryManager {
     }
 
     /**
-     * 清理无效的历史记录（脚本已不存在）
+     * 清理无效的历史记录（脚本或 Git 命令已不存在）
      */
-    async cleanupInvalidHistory(allScripts: NpmScript[]): Promise<number> {
-        const validKeys = new Set(allScripts.map(script => this.getScriptKey(script)));
+    async cleanupInvalidHistory(allScripts: NpmScript[], allGitCommands: GitCommand[]): Promise<number> {
+        const validScriptKeys = new Set(allScripts.map(script => this.getScriptKey(script)));
+        const validGitKeys = new Set(allGitCommands.map(cmd => this.getHistoryKeyForGitCommand(cmd)));
         const originalLength = this.history.length;
         
-        this.history = this.history.filter(item => 
-            validKeys.has(this.getScriptKey(item.script))
-        );
+        this.history = this.history.filter(item => {
+            if (item.type === 'git') {
+                if (!item.gitCommand) {
+                    return false;
+                }
+                return validGitKeys.has(this.getHistoryKeyForGitCommand(item.gitCommand));
+            }
+
+            if (!item.script) {
+                return false;
+            }
+
+            return validScriptKeys.has(this.getScriptKey(item.script));
+        });
 
         const removedCount = originalLength - this.history.length;
         
         if (removedCount > 0) {
+            this.sortHistory();
             await this.saveHistory();
         }
 
@@ -155,8 +236,11 @@ export class HistoryManager {
     setMaxHistorySize(size: number): void {
         this.maxHistorySize = size;
         if (this.history.length > size) {
+            this.sortHistory();
             this.history = this.history.slice(0, size);
             this.saveHistory();
+        } else {
+            this.sortHistory();
         }
     }
 
@@ -167,4 +251,3 @@ export class HistoryManager {
         return this.maxHistorySize;
     }
 }
-

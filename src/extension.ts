@@ -18,6 +18,11 @@ import { NpmScript, NpmScriptTreeItem, Workflow, GitCommand } from './types';
 export function activate(context: vscode.ExtensionContext) {
     console.log('脚本管家已激活');
 
+    // 设置生产环境标识（开发模式下为 false，打包后为 true）
+    const isProduction = context.extensionMode === vscode.ExtensionMode.Production;
+    vscode.commands.executeCommand('setContext', 'isProduction', isProduction);
+    console.log(`[ScriptButler] 运行模式: ${isProduction ? '生产环境' : '开发环境'}`);
+
     // Initialize core components
     const packageScanner = new PackageScanner();
     const favoritesManager = new FavoritesManager(context);
@@ -88,10 +93,6 @@ export function activate(context: vscode.ExtensionContext) {
         });
 
         console.log('[ScriptButler] Terminal monitoring enabled');
-        vscode.window.showInformationMessage(
-            '脚本管家：终端监听功能已启用（实验性）',
-            { modal: false }
-        );
     } else {
         console.log('[ScriptButler] Terminal monitoring disabled');
         // 确保 historyTreeProvider 知道没有 terminalMonitor
@@ -113,7 +114,7 @@ export function activate(context: vscode.ExtensionContext) {
         const allScripts = scriptsTreeProvider.getAllScripts();
         const allGitCommands = gitCommandManager.getAllCommands();
         await favoritesManager.cleanupInvalidFavorites(allScripts, allGitCommands);
-        await historyManager.cleanupInvalidHistory(allScripts);
+        await historyManager.cleanupInvalidHistory(allScripts, allGitCommands);
 
         favoritesTreeProvider.refresh();
         historyTreeProvider.refresh();
@@ -143,11 +144,9 @@ export function activate(context: vscode.ExtensionContext) {
             favoritesTreeProvider.refresh();
 
             if (removedCount > 0) {
-                vscode.window.showInformationMessage(
-                    `脚本已刷新，已移除 ${removedCount} 个失效的收藏`
-                );
+                console.log(`[ScriptButler] Removed ${removedCount} invalid favorites during refresh`);
             } else {
-                vscode.window.showInformationMessage('脚本已刷新');
+                console.log('[ScriptButler] Scripts refreshed');
             }
         }
     );
@@ -252,7 +251,7 @@ export function activate(context: vscode.ExtensionContext) {
         'npmScriptManager.clearFilter',
         () => {
             scriptsTreeProvider.clearFilter();
-            vscode.window.showInformationMessage('过滤已清除');
+            console.log('[ScriptButler] Script filter cleared');
         }
     );
 
@@ -269,7 +268,7 @@ export function activate(context: vscode.ExtensionContext) {
             if (result === '确定') {
                 await historyManager.clearHistory();
                 historyTreeProvider.refresh();
-                vscode.window.showInformationMessage('历史记录已清空');
+                console.log('[ScriptButler] History cleared');
             }
         }
     );
@@ -505,6 +504,10 @@ export function activate(context: vscode.ExtensionContext) {
             }
 
             await scriptExecutor.executeGitCommand(gitCommand.command, gitCommand.name);
+            
+            // 添加到历史记录
+            await historyManager.addToHistory(gitCommand, 'git');
+            historyTreeProvider.refresh();
         }
     );
 
@@ -537,7 +540,7 @@ export function activate(context: vscode.ExtensionContext) {
 
             await gitCommandManager.addCustomCommand(name, command, description);
             gitCommandTreeProvider.refresh();
-            vscode.window.showInformationMessage(`Git 命令 "${name}" 已添加`);
+            console.log(`[ScriptButler] Added Git command "${name}"`);
         }
     );
 
@@ -559,7 +562,7 @@ export function activate(context: vscode.ExtensionContext) {
             if (result === '确定') {
                 await gitCommandManager.removeCustomCommand(gitCommand.id);
                 gitCommandTreeProvider.refresh();
-                vscode.window.showInformationMessage(`Git 命令 "${gitCommand.name}" 已删除`);
+                console.log(`[ScriptButler] Deleted Git command "${gitCommand.name}"`);
             }
         }
     );

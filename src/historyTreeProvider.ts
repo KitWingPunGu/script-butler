@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { NpmScript, NpmScriptTreeItem } from './types';
+import { NpmScript, NpmScriptTreeItem, GitCommand } from './types';
 import { HistoryManager, HistoryItem } from './historyManager';
 import { TerminalMonitor } from './terminalMonitor';
 
@@ -11,30 +11,47 @@ class HistoryTreeItem extends vscode.TreeItem {
         public readonly historyItem: HistoryItem,
         private historyManager: HistoryManager
     ) {
-        super(historyItem.script.name, vscode.TreeItemCollapsibleState.None);
+        const isGit = historyItem.type === 'git';
+        const name = isGit
+            ? historyItem.gitCommand?.name || '未知命令'
+            : historyItem.script?.name || '未知脚本';
+        
+        super(name, vscode.TreeItemCollapsibleState.None);
         
         const relativeTime = historyManager.formatRelativeTime(historyItem.timestamp);
         const execCount = historyItem.executionCount;
         
-        this.tooltip = `${historyItem.script.command}\n\n` +
-                      `路径: ${historyItem.script.packageJsonPath}\n` +
-                      `执行时间: ${relativeTime}\n` +
-                      `执行次数: ${execCount}`;
-        
-        // 显示相对时间和执行次数
-        this.description = `${relativeTime} (${execCount}次)`;
-        
-        this.contextValue = 'historyScript';
-        
-        // 使用时钟图标
-        this.iconPath = new vscode.ThemeIcon('history');
-        
-        // 点击执行脚本
-        this.command = {
-            command: 'npmScriptManager.runScript',
-            title: '运行脚本',
-            arguments: [historyItem.script]
-        };
+        if (isGit && historyItem.gitCommand) {
+            this.tooltip = `${historyItem.gitCommand.command}\n\n` +
+                          `类型: Git 命令\n` +
+                          `执行时间: ${relativeTime}\n` +
+                          `执行次数: ${execCount}`;
+            
+            this.description = `${relativeTime} (${execCount}次)`;
+            this.contextValue = 'historyGitCommand';
+            this.iconPath = new vscode.ThemeIcon('git-commit');
+            
+            this.command = {
+                command: 'scriptButler.runGitCommand',
+                title: '运行 Git 命令',
+                arguments: [historyItem.gitCommand]
+            };
+        } else if (historyItem.script) {
+            this.tooltip = `${historyItem.script.command}\n\n` +
+                          `路径: ${historyItem.script.packageJsonPath}\n` +
+                          `执行时间: ${relativeTime}\n` +
+                          `执行次数: ${execCount}`;
+            
+            this.description = `${relativeTime} (${execCount}次)`;
+            this.contextValue = 'historyScript';
+            this.iconPath = new vscode.ThemeIcon('history');
+            
+            this.command = {
+                command: 'npmScriptManager.runScript',
+                title: '运行脚本',
+                arguments: [historyItem.script]
+            };
+        }
     }
 }
 

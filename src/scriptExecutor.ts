@@ -144,13 +144,13 @@ export class ScriptExecutor {
         // 实际项目中可能需要更复杂的进程监听机制
 
         if (sendEnter) {
-            vscode.window.showInformationMessage(`正在运行 (${pmName}): ${script.name}`);
+            console.log(`[ScriptExecutor] Running (${pmName}): ${script.name}`);
 
             // 注意：由于 VS Code API 限制，我们无法直接获取进程退出码
             // 这里提供一个基础实现，实际使用中可能需要用户手动标记完成
             // 或者使用更复杂的进程监听方案
         } else {
-            vscode.window.showInformationMessage(`命令已上屏: ${script.name}`);
+            console.log(`[ScriptExecutor] Command queued: ${script.name}`);
             // Git 命令只上屏，不执行，所以立即设置为 IDLE 状态
             this.setStatus(script, ScriptStatus.IDLE);
         }
@@ -205,7 +205,7 @@ export class ScriptExecutor {
         terminal.show();
         terminal.sendText(commandStr, false);  // false = 不发送回车
 
-        vscode.window.showInformationMessage(`Git 命令已上屏: ${commandStr}`);
+        console.log(`[ScriptExecutor] Git command queued: ${commandStr}`);
     }
 
     /**

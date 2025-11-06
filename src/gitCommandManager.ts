@@ -10,7 +10,7 @@ const GIT_COMMANDS_STORAGE_KEY = 'scriptButler.gitCommands';
  * 预置的 Git 命令
  */
 const PRESET_GIT_COMMANDS: GitCommand[] = [
-    // === 基础查看命令 ===
+    // === 核心常用命令 ===
     {
         id: 'git-status',
         name: 'Git Status',
@@ -19,49 +19,26 @@ const PRESET_GIT_COMMANDS: GitCommand[] = [
         isCustom: false
     },
     {
-        id: 'git-log',
-        name: 'Git Log (简洁)',
-        command: 'git log --oneline -10',
-        description: '查看最近 10 条提交记录 - 单行简洁格式',
+        id: 'git-add-all',
+        name: 'Git Add (全部)',
+        command: 'git add .',
+        description: '暂存所有更改 - 将当前目录下所有修改添加到暂存区',
         isCustom: false
     },
     {
-        id: 'git-log-graph',
-        name: 'Git Log (图形)',
-        command: 'git log --oneline --graph --all -20',
-        description: '查看提交历史图形 - 显示分支合并关系',
+        id: 'git-commit',
+        name: 'Git Commit',
+        command: 'git commit -m "update"',
+        description: '提交更改 - 将暂存区的修改提交到本地仓库',
         isCustom: false
     },
     {
-        id: 'git-diff',
-        name: 'Git Diff (工作区)',
-        command: 'git diff',
-        description: '查看工作区未暂存的修改 - 对比工作区与暂存区',
+        id: 'git-commit-amend',
+        name: 'Git Commit (修改)',
+        command: 'git commit --amend --no-edit',
+        description: '修改最后一次提交 - 将暂存区的修改合并到上次提交',
         isCustom: false
     },
-    {
-        id: 'git-diff-staged',
-        name: 'Git Diff (暂存区)',
-        command: 'git diff --staged',
-        description: '查看已暂存的修改 - 对比暂存区与最新提交',
-        isCustom: false
-    },
-    {
-        id: 'git-branch',
-        name: 'Git Branch (所有)',
-        command: 'git branch -a',
-        description: '查看所有分支 - 包括本地和远程分支',
-        isCustom: false
-    },
-    {
-        id: 'git-branch-verbose',
-        name: 'Git Branch (详细)',
-        command: 'git branch -vv',
-        description: '查看分支详细信息 - 显示最新提交和跟踪关系',
-        isCustom: false
-    },
-
-    // === 远程操作命令 ===
     {
         id: 'git-pull',
         name: 'Git Pull',
@@ -84,6 +61,94 @@ const PRESET_GIT_COMMANDS: GitCommand[] = [
         isCustom: false
     },
     {
+        id: 'git-fetch',
+        name: 'Git Fetch',
+        command: 'git fetch --all --prune',
+        description: '获取远程更新 - 下载所有远程分支并清理已删除的引用',
+        isCustom: false
+    },
+    {
+        id: 'git-log',
+        name: 'Git Log (简洁)',
+        command: 'git log --oneline -10',
+        description: '查看最近 10 条提交记录 - 单行简洁格式',
+        isCustom: false
+    },
+    {
+        id: 'git-diff',
+        name: 'Git Diff (工作区)',
+        command: 'git diff',
+        description: '查看工作区未暂存的修改 - 对比工作区与暂存区',
+        isCustom: false
+    },
+
+    // === 历史与对比 ===
+    {
+        id: 'git-log-graph',
+        name: 'Git Log (图形)',
+        command: 'git log --oneline --graph --all -20',
+        description: '查看提交历史图形 - 显示分支合并关系',
+        isCustom: false
+    },
+    {
+        id: 'git-diff-staged',
+        name: 'Git Diff (暂存区)',
+        command: 'git diff --staged',
+        description: '查看已暂存的修改 - 对比暂存区与最新提交',
+        isCustom: false
+    },
+    {
+        id: 'git-show',
+        name: 'Git Show',
+        command: 'git show HEAD',
+        description: '查看最新提交详情 - 显示最后一次提交的完整信息',
+        isCustom: false
+    },
+    {
+        id: 'git-reflog',
+        name: 'Git Reflog',
+        command: 'git reflog -10',
+        description: '查看引用日志 - 显示最近 10 次 HEAD 的变化记录',
+        isCustom: false
+    },
+
+    // === 分支与协作 ===
+    {
+        id: 'git-branch',
+        name: 'Git Branch (所有)',
+        command: 'git branch -a',
+        description: '查看所有分支 - 包括本地和远程分支',
+        isCustom: false
+    },
+    {
+        id: 'git-branch-verbose',
+        name: 'Git Branch (详细)',
+        command: 'git branch -vv',
+        description: '查看分支详细信息 - 显示最新提交和跟踪关系',
+        isCustom: false
+    },
+    {
+        id: 'git-checkout-main',
+        name: 'Checkout Main',
+        command: 'git checkout main',
+        description: '切换到 main 分支 - 切换工作区到主分支',
+        isCustom: false
+    },
+    {
+        id: 'git-checkout-master',
+        name: 'Checkout Master',
+        command: 'git checkout master',
+        description: '切换到 master 分支 - 切换工作区到主分支',
+        isCustom: false
+    },
+    {
+        id: 'git-merge',
+        name: 'Git Merge',
+        command: 'git merge --no-ff',
+        description: '合并分支 - 使用非快进方式合并分支',
+        isCustom: false
+    },
+    {
         id: 'git-push-upstream',
         name: 'Git Push (设置上游)',
         command: 'git push -u origin master',
@@ -98,37 +163,21 @@ const PRESET_GIT_COMMANDS: GitCommand[] = [
         isCustom: false
     },
     {
-        id: 'git-fetch',
-        name: 'Git Fetch',
-        command: 'git fetch --all --prune',
-        description: '获取远程更新 - 下载所有远程分支并清理已删除的引用',
+        id: 'git-remote',
+        name: 'Git Remote',
+        command: 'git remote -v',
+        description: '查看远程仓库 - 显示所有远程仓库的 URL',
+        isCustom: false
+    },
+    {
+        id: 'git-tag',
+        name: 'Git Tag',
+        command: 'git tag',
+        description: '查看所有标签 - 列出仓库中的所有 tag',
         isCustom: false
     },
 
-    // === 暂存和提交命令 ===
-    {
-        id: 'git-add-all',
-        name: 'Git Add (全部)',
-        command: 'git add .',
-        description: '暂存所有更改 - 将当前目录下所有修改添加到暂存区',
-        isCustom: false
-    },
-    {
-        id: 'git-commit',
-        name: 'Git Commit',
-        command: 'git commit -m "update"',
-        description: '提交更改 - 将暂存区的修改提交到本地仓库',
-        isCustom: false
-    },
-    {
-        id: 'git-commit-amend',
-        name: 'Git Commit (修改)',
-        command: 'git commit --amend --no-edit',
-        description: '修改最后一次提交 - 将暂存区的修改合并到上次提交',
-        isCustom: false
-    },
-
-    // === Stash 命令 ===
+    // === Stash 操作 ===
     {
         id: 'git-stash',
         name: 'Git Stash (保存)',
@@ -165,30 +214,7 @@ const PRESET_GIT_COMMANDS: GitCommand[] = [
         isCustom: false
     },
 
-    // === 分支操作命令 ===
-    {
-        id: 'git-checkout-master',
-        name: 'Checkout Master',
-        command: 'git checkout master',
-        description: '切换到 master 分支 - 切换工作区到主分支',
-        isCustom: false
-    },
-    {
-        id: 'git-checkout-main',
-        name: 'Checkout Main',
-        command: 'git checkout main',
-        description: '切换到 main 分支 - 切换工作区到主分支',
-        isCustom: false
-    },
-    {
-        id: 'git-merge',
-        name: 'Git Merge',
-        command: 'git merge --no-ff',
-        description: '合并分支 - 使用非快进方式合并分支',
-        isCustom: false
-    },
-
-    // === 撤销和重置命令 ===
+    // === 清理与撤销 ===
     {
         id: 'git-reset-soft',
         name: 'Git Reset (软重置)',
@@ -208,36 +234,6 @@ const PRESET_GIT_COMMANDS: GitCommand[] = [
         name: 'Git Clean',
         command: 'git clean -fd',
         description: '清理未跟踪文件 - 删除工作区中未被 Git 跟踪的文件和目录',
-        isCustom: false
-    },
-
-    // === 其他常用命令 ===
-    {
-        id: 'git-remote',
-        name: 'Git Remote',
-        command: 'git remote -v',
-        description: '查看远程仓库 - 显示所有远程仓库的 URL',
-        isCustom: false
-    },
-    {
-        id: 'git-tag',
-        name: 'Git Tag',
-        command: 'git tag',
-        description: '查看所有标签 - 列出仓库中的所有 tag',
-        isCustom: false
-    },
-    {
-        id: 'git-show',
-        name: 'Git Show',
-        command: 'git show HEAD',
-        description: '查看最新提交详情 - 显示最后一次提交的完整信息',
-        isCustom: false
-    },
-    {
-        id: 'git-reflog',
-        name: 'Git Reflog',
-        command: 'git reflog -10',
-        description: '查看引用日志 - 显示最近 10 次 HEAD 的变化记录',
         isCustom: false
     }
 ];
