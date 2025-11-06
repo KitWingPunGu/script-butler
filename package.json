@@ -2,7 +2,7 @@
   "name": "script-butler",
   "displayName": "脚本管家",
   "description": "智能管理和执行项目脚本，支持 npm/pnpm/yarn 等多种包管理器",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "your-publisher-name",
   "author": "KitWing",
   "license": "MIT",
