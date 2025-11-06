@@ -1,178 +1,228 @@
-# NPM Script Manager
+# 脚本管家 (Script Butler)
 
-A powerful VS Code extension for managing and executing NPM scripts with ease.
+一个强大的 VS Code 扩展，智能管理和执行项目脚本，支持 npm/pnpm/yarn 等多种包管理器。
 
-## Features
+## ✨ 功能特性
 
-### 📋 Script Discovery
-- Automatically detects all `package.json` files in your workspace
-- Displays all NPM scripts in a dedicated sidebar panel
-- Supports monorepo structures with multiple `package.json` files
-- Auto-refreshes when `package.json` files are modified
+### 核心功能
 
-### ⭐ Favorites
-- Mark frequently-used scripts as favorites
-- Dedicated "Favorites" view for quick access
-- Favorites are persisted across VS Code sessions
-- Visual indicators (star icons) for favorite scripts
+- 🔍 **自动检测** - 自动发现工作区中的所有 package.json 文件
+- 📦 **多包管理器支持** - 智能检测并支持 npm/pnpm/yarn/yarn-berry
+- 📋 **脚本列表** - 在专用侧边栏面板中显示所有项目脚本
+- ▶️ **一键执行** - 点击即可在集成终端中运行脚本
+- ⭐ **收藏夹** - 标记常用脚本并跨会话持久化，自动同步更新
+- 🔎 **搜索过滤** - 按名称或命令实时过滤脚本
+- 🏢 **Monorepo 支持** - 处理多个 package.json 文件并分组显示
+- 🔄 **自动刷新** - 监视 package.json 更改并自动更新
+- 💻 **智能终端** - 重用终端以提高效率
 
-### 🔍 Search & Filter
-- Filter scripts by name or command
-- Real-time filtering as you type
-- Clear filter button for easy reset
-- Filter state is maintained until cleared
+### 用户界面
 
-### ▶️ Script Execution
-- Run scripts directly from the extension UI
-- Scripts execute in VS Code's integrated terminal
-- Each script runs in its own named terminal
-- Terminal reuse for repeated script executions
-- Visual feedback when scripts are launched
+- 📊 **树形视图** - 清晰的层次结构显示
+- 🎯 **上下文菜单** - 右键快速操作
+- 💡 **工具提示** - 悬停显示完整命令
+- 🔔 **通知** - 操作反馈提示
+- ⌨️ **键盘导航** - 完整的键盘支持
 
-### 🎨 User Interface
-- Clean, intuitive tree view interface
-- Contextual menus for quick actions
-- Inline action buttons for common operations
-- Collapsible workspace folders in monorepos
-- Tooltips showing full script commands and paths
+## 📦 安装
 
-## Installation
+### 方法 1：从源代码安装（开发测试）
 
-### From Source
+1. 克隆或下载此项目
+2. 在 VS Code 中打开项目文件夹
+3. 按 `F5` 启动扩展开发主机
+4. 在新窗口中打开包含 package.json 的项目
 
-1. Clone this repository
-2. Run `npm install` to install dependencies
-3. Press `F5` to open a new VS Code window with the extension loaded
-4. The extension will activate when it detects a `package.json` file
-
-### Building VSIX Package
+### 方法 2：从 VSIX 安装
 
 ```bash
+# 打包扩展
 npm install -g @vscode/vsce
+vsce package
+
+# 安装 .vsix 文件
+code --install-extension npm-script-manager-0.0.1.vsix
+```
+
+## 🚀 使用方法
+
+### 查看脚本
+
+1. 点击活动栏中的 **NPM 图标** 📦
+2. 查看 **脚本列表** 面板中的所有可用脚本
+3. 展开文件夹（在 monorepo 中）查看分组脚本
+
+### 运行脚本
+
+**方法 1：** 点击脚本旁边的播放按钮 ▶️  
+**方法 2：** 右键点击脚本 → 选择 "运行脚本"  
+**方法 3：** 选择脚本后按 `Enter`
+
+脚本将在名为 `NPM: <脚本名称>` 的集成终端中执行。
+
+### 管理收藏夹
+
+**添加到收藏夹：**
+- 右键点击脚本 → "添加到收藏夹"
+- 脚本将出现在 **收藏夹** 面板中
+
+**从收藏夹移除：**
+- 在收藏夹面板中右键点击脚本 → "从收藏夹移除"
+
+收藏夹会自动保存并在 VS Code 会话之间持久化。
+
+### 过滤脚本
+
+1. 点击脚本列表面板中的 **过滤图标** 🔍
+2. 输入搜索文本（按名称或命令搜索）
+3. 查看过滤后的结果
+4. 点击 **清除过滤** ✖️ 按钮显示所有脚本
+
+过滤是实时的且不区分大小写。
+
+### 刷新脚本
+
+- 点击 **刷新按钮** 🔄 重新加载所有脚本
+- 或使用命令面板：`NPM 脚本管理器: 刷新脚本`
+
+当您修改 package.json 时，脚本会自动刷新。
+
+## 🎯 Monorepo 支持
+
+扩展自动检测工作区中的多个 package.json 文件并按位置分组：
+
+```
+脚本列表
+├─ 📁 package.json
+│  ├─ dev
+│  └─ build
+├─ 📁 apps/frontend/package.json
+│  ├─ dev
+│  └─ test
+└─ 📁 apps/backend/package.json
+   ├─ start
+   └─ test
+```
+
+每个组都可以展开/折叠以便于导航。
+
+## ⌨️ 命令
+
+所有命令都可以通过命令面板访问（`Ctrl+Shift+P`）：
+
+| 命令 | 描述 |
+|------|------|
+| `刷新脚本` | 从 package.json 重新加载所有脚本 |
+| `运行脚本` | 执行选定的脚本 |
+| `添加到收藏夹` | 将脚本标记为收藏 |
+| `从收藏夹移除` | 取消脚本收藏 |
+| `过滤脚本` | 打开搜索输入框 |
+| `清除过滤` | 移除活动过滤器 |
+
+## 🎨 界面预览
+
+### 单个 package.json
+
+```
+NPM 脚本                    🔄 🔍
+├─ 📄 dev                   ▶️
+├─ 📄 build                 ▶️
+├─ 📄 test                  ▶️
+└─ 📄 lint                  ▶️
+
+收藏夹
+├─ ⭐ dev                   ▶️
+└─ ⭐ test                  ▶️
+```
+
+### Monorepo 项目
+
+```
+NPM 脚本                    🔄 🔍
+├─ 📁 package.json
+│  ├─ 📄 dev               ▶️
+│  └─ 📄 build             ▶️
+└─ 📁 apps/frontend/package.json
+   ├─ 📄 dev               ▶️
+   └─ 📄 test              ▶️
+```
+
+## 🔧 要求
+
+- VS Code 版本 1.85.0 或更高
+- Node.js 和 npm 已安装
+- 工作区中至少有一个 package.json 文件
+
+## 📝 已知问题
+
+目前没有已知问题。如果遇到任何问题，请在 GitHub 上报告。
+
+## 🛠️ 开发
+
+### 设置开发环境
+
+```bash
+# 安装依赖
+npm install
+
+# 编译 TypeScript
+npm run compile
+
+# 或使用监视模式
+npm run watch
+```
+
+### 调试扩展
+
+1. 在 VS Code 中打开项目
+2. 按 `F5` 启动扩展开发主机
+3. 在新窗口中测试扩展
+4. 进行更改后按 `Ctrl+R` 重新加载
+
+### 打包扩展
+
+```bash
+# 安装 vsce
+npm install -g @vscode/vsce
+
+# 创建 .vsix 文件
 vsce package
 ```
 
-Then install the `.vsix` file in VS Code.
+## 📚 文档
 
-## Usage
+### 用户文档
+- **[快速开始指南](./docs/QUICKSTART.md)** - 5 分钟快速上手
+- **[功能特性详解](./docs/FEATURES.md)** - 完整功能说明和最佳实践
+- **[故障排除指南](./docs/TROUBLESHOOTING.md)** - 常见问题解决方案
 
-### Viewing Scripts
+### 开发者文档
+- **[架构设计](./docs/ARCHITECTURE.md)** - 技术架构和组件设计
+- **[开发指南](./docs/DEVELOPMENT.md)** - 开发环境搭建和工作流
+- **[文档索引](./docs/INDEX.md)** - 完整文档导航
 
-1. Open a project with a `package.json` file
-2. Click on the NPM icon in the Activity Bar (left sidebar)
-3. View all available scripts in the "Scripts" panel
+### 更多文档
+查看 **[docs/](./docs/)** 文件夹获取完整文档列表。
 
-### Running Scripts
+## 📄 许可证
 
-- **Click** on any script to run it
-- **Right-click** and select "Run Script"
-- Scripts execute in the integrated terminal
+MIT 许可证 - 可自由使用、修改和分发
 
-### Managing Favorites
+## 🤝 贡献
 
-- **Add to Favorites**: Right-click a script → "Add to Favorites"
-- **Remove from Favorites**: Right-click a favorite → "Remove from Favorites"
-- View all favorites in the "Favorites" panel
+欢迎贡献！请随时提交问题或拉取请求。
 
-### Filtering Scripts
+在贡献之前，请阅读：
+- [开发指南](./docs/DEVELOPMENT.md) - 了解开发流程和规范
+- [架构设计](./docs/ARCHITECTURE.md) - 理解项目架构
 
-1. Click the filter icon (🔍) in the Scripts panel toolbar
-2. Enter search text (searches both script names and commands)
-3. Click the clear icon (✖) to remove the filter
+## 📞 支持
 
-### Refreshing
+如有问题或功能请求，请在 GitHub 上创建问题。
 
-- Click the refresh icon (🔄) to manually reload scripts
-- Scripts auto-refresh when `package.json` files change
+遇到问题？查看 [故障排除指南](./docs/TROUBLESHOOTING.md)
 
-## Monorepo Support
+---
 
-The extension automatically detects multiple `package.json` files in your workspace:
-
-- Scripts are grouped by their `package.json` location
-- Each group shows the relative path to its `package.json`
-- Expand/collapse groups as needed
-- Single `package.json` projects show a flat list
-
-## Commands
-
-| Command | Description |
-|---------|-------------|
-| `NPM Script Manager: Refresh Scripts` | Reload all scripts from package.json files |
-| `NPM Script Manager: Run Script` | Execute the selected script |
-| `NPM Script Manager: Add to Favorites` | Mark a script as favorite |
-| `NPM Script Manager: Remove from Favorites` | Unmark a favorite script |
-| `NPM Script Manager: Filter Scripts` | Filter scripts by name/command |
-| `NPM Script Manager: Clear Filter` | Remove active filter |
-
-## Requirements
-
-- VS Code 1.85.0 or higher
-- Node.js and NPM installed on your system
-
-## Extension Settings
-
-This extension stores the following data:
-
-- **Favorites**: List of favorite scripts (persisted globally)
-- **Filter State**: Current filter text (session-based)
-
-## Development
-
-### Project Structure
-
-```
-.
-├── src/
-│   ├── extension.ts              # Main extension entry point
-│   ├── types.ts                  # TypeScript interfaces and types
-│   ├── packageScanner.ts         # Package.json detection and parsing
-│   ├── favoritesManager.ts       # Favorites persistence logic
-│   ├── scriptsTreeProvider.ts    # Scripts tree view provider
-│   ├── favoritesTreeProvider.ts  # Favorites tree view provider
-│   └── scriptExecutor.ts         # Script execution in terminal
-├── resources/
-│   └── npm-icon.svg              # Extension icon
-├── package.json                  # Extension manifest
-└── tsconfig.json                 # TypeScript configuration
-```
-
-### Building
-
-```bash
-npm install          # Install dependencies
-npm run compile      # Compile TypeScript
-npm run watch        # Watch mode for development
-npm run lint         # Run ESLint
-```
-
-### Debugging
-
-1. Open the project in VS Code
-2. Press `F5` to launch the Extension Development Host
-3. Set breakpoints in the TypeScript source files
-4. Test the extension in the new window
-
-## Known Issues
-
-- None at this time
-
-## Release Notes
-
-### 0.0.1
-
-Initial release with core features:
-- Script detection and display
-- Favorites management
-- Search/filter functionality
-- Script execution
-- Monorepo support
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit issues or pull requests.
-
-## License
-
-MIT
+**享受使用脚本管家！** 🚀
 

@@ -4,11 +4,11 @@
   "description": "智能管理和执行项目脚本，支持 npm/pnpm/yarn 等多种包管理器",
   "version": "1.0.0",
   "publisher": "your-publisher-name",
-  "author": "Your Name",
+  "author": "KitWing",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/script-butler"
+    "url": "https://github.com/KitWingPunGu/script-butler"
   },
   "engines": {
     "vscode": "^1.85.0"
